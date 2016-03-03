@@ -2,11 +2,14 @@ package com.example.rafael.andruino;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
+
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     Pubnub pubnub;
@@ -42,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
                         public void successCallback(String channel, Object message) {
                             System.out.println("SUBSCRIBE : " + channel + " : "
                                     + message.getClass() + " : " + message.toString());
+
+                            onReceive(message.toString());
                         }
 
                         @Override
@@ -57,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void publish(String message) {
-        pubnub.publish("ANDRUINO", "Hello from the PubNub Java SDK", new Callback() {
+        pubnub.publish("ANDRUINO", message, new Callback() {
             public void successCallback(String channel, Object response) {
 
             }
@@ -66,5 +71,32 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void onReceive(String jsonString) {
+        JSONObject json;
+
+        try {
+            json = new JSONObject(jsonString);
+
+            if (json.has("bt1")) {
+                Log.d("ANDRUINO", json.getString("bt1"));
+            }
+
+            if (json.has("bt2")) {
+                Log.d("ANDRUINO", json.getString("bt2"));
+            }
+
+            if (json.has("bt3")) {
+                Log.d("ANDRUINO", json.getString("bt3"));
+            }
+
+            if (json.has("bt4")) {
+                Log.d("ANDRUINO", json.getString("bt4"));
+            }
+
+        } catch (Exception e) {
+            Log.d("ANDRUINO", e.getMessage());
+        }
     }
 }
