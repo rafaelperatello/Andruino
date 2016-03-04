@@ -21,19 +21,22 @@
             android:text="Acionamento" />
 
         <Button
+            android:id="@+id/button_Led1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Led1" />
 
         <Button
+            android:id="@+id/button_Led2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Led2" />
 
-        <Button
+        <SeekBar
+            android:id="@+id/seekBarLed3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Led3" />
+            android:layout_marginTop="15dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -49,6 +52,7 @@
             android:layout_weight="1">
 
             <EditText
+                android:id="@+id/edit_button1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:focusable="false"
@@ -63,6 +67,7 @@
             android:layout_weight="1">
 
             <EditText
+                android:id="@+id/edit_button2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:focusable="false"
@@ -77,6 +82,7 @@
             android:layout_weight="1">
 
             <EditText
+                android:id="@+id/edit_button3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:focusable="false"
