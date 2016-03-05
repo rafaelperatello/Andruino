@@ -15,8 +15,11 @@ import com.pubnub.api.PubnubException;
 
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private Pubnub pubnub;
+
+    private boolean isButtonLed1Active = false;
+    private boolean isButtonLed2Active = false;
 
     private Button buttonLed1;
     private Button buttonLed2;
@@ -44,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         seekBarLed3 = (SeekBar) findViewById(R.id.seekBarLed3);
         seekBarLed3.setOnSeekBarChangeListener(this);
+        seekBarLed3.setMax(255);
 
         editButton1 = (EditText) findViewById(R.id.edit_button1);
         editButton2 = (EditText) findViewById(R.id.edit_button2);
@@ -92,16 +96,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void publish(String message) {
-        pubnub.publish("ANDRUINO", message, new Callback() {
-            public void successCallback(String channel, Object response) {
+    private void publish(String key, String value) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put(key, value);
 
-            }
+            pubnub.publish("ANDRUINO", json, new Callback() {
+                public void successCallback(String channel, Object response) {
 
-            public void errorCallback(String channel, PubnubError error) {
+                }
 
-            }
-        });
+                public void errorCallback(String channel, PubnubError error) {
+
+                }
+            });
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
     }
 
     private void onReceive(String jsonString) {
@@ -133,7 +144,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-
+        if (v.getId() == R.id.button_Led1) {
+            if (isButtonLed1Active) {
+                publish("led1", "0");
+                isButtonLed1Active = false;
+            } else {
+                publish("led1", "255");
+                isButtonLed1Active = true;
+            }
+        } else if (v.getId() == R.id.button_Led2) {
+            if (isButtonLed2Active) {
+                publish("led2", "0");
+                isButtonLed2Active = false;
+            } else {
+                publish("led2", "255");
+                isButtonLed2Active = true;
+            }
+        }
     }
 
     @Override
@@ -148,6 +175,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        Log.d("ANDRUINO", "" + seekBar.getMax());
+        publish("led3", "" + seekBar.getProgress());
     }
 }
