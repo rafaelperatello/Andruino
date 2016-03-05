@@ -1,9 +1,9 @@
 package com.example.rafael.andruino;
 
+import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +15,7 @@ import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
 import com.pubnub.api.PubnubException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             System.out.println("SUBSCRIBE : " + channel + " : "
                                     + message.getClass() + " : " + message.toString());
 
-                            onReceive(message.toString());
+                            onReceive(message);
                         }
 
                         @Override
@@ -121,18 +122,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void onReceive(String jsonString) {
-        JSONObject json;
+    private void onReceive(Object object) {
+        final Object message = object;
 
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                try {
+                    if (message instanceof JSONObject) {
+                        JSONObject json = (JSONObject) message;
+                        processJson(json);
+
+                    } else if (message instanceof String) {
+                        String jsonString = (String) message;
+                        try {
+                            JSONObject json = new JSONObject(jsonString);
+                            processJson(json);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    } else if (message instanceof JSONArray) {
+                        final JSONArray jsonArray = (JSONArray) message;
+
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            try {
+                                processJson(jsonArray.getJSONObject(i));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void processJson(JSONObject json) {
         try {
-            json = new JSONObject(jsonString);
-
             if (json.has("bt1")) {
                 processButtonStatus(editButton1, json.getString("bt1"));
-            } else if (json.has("bt2")) {
+            }
+            if (json.has("bt2")) {
                 processButtonStatus(editButton2, json.getString("bt2"));
-
-            } else if (json.has("bt3")) {
+            }
+            if (json.has("bt3")) {
                 processButtonStatus(editButton3, json.getString("bt3"));
             }
 
