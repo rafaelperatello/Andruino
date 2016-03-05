@@ -1,5 +1,7 @@
 package com.example.rafael.andruino;
 
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +23,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private boolean isButtonLed1Active = false;
     private boolean isButtonLed2Active = false;
 
+    private CoordinatorLayout coordinator;
+
     private Button buttonLed1;
     private Button buttonLed2;
     private SeekBar seekBarLed3;
@@ -39,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         pubnub = new Pubnub(pubKey, subKey);
 
+        coordinator = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
+
         buttonLed1 = (Button) findViewById(R.id.button_Led1);
         buttonLed2 = (Button) findViewById(R.id.button_Led2);
 
@@ -53,12 +59,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editButton2 = (EditText) findViewById(R.id.edit_button2);
         editButton3 = (EditText) findViewById(R.id.edit_button3);
 
-        initPubNub();
+        subscribe("ANDRUINO");
     }
 
-    private void initPubNub() {
+    private void publish(String key, String value) {
         try {
-            pubnub.subscribe("ANDRUINO", new Callback() {
+            JSONObject json = new JSONObject();
+            json.put(key, value);
+
+            pubnub.publish("ANDRUINO", json, new Callback() {
+                public void successCallback(String channel, Object response) {
+                    Snackbar.make(coordinator, "Sucesso ao enviar", Snackbar.LENGTH_SHORT).show();
+                }
+
+                public void errorCallback(String channel, PubnubError error) {
+                    Snackbar.make(coordinator, "Erro ao enviar", Snackbar.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    private void subscribe(String channel) {
+        try {
+            pubnub.subscribe(channel, new Callback() {
                         @Override
                         public void connectCallback(String channel, Object message) {
                         }
@@ -96,25 +121,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void publish(String key, String value) {
-        try {
-            JSONObject json = new JSONObject();
-            json.put(key, value);
-
-            pubnub.publish("ANDRUINO", json, new Callback() {
-                public void successCallback(String channel, Object response) {
-
-                }
-
-                public void errorCallback(String channel, PubnubError error) {
-
-                }
-            });
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-    }
-
     private void onReceive(String jsonString) {
         JSONObject json;
 
@@ -122,23 +128,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             json = new JSONObject(jsonString);
 
             if (json.has("bt1")) {
-                Log.d("ANDRUINO", json.getString("bt1"));
-            }
+                processButtonStatus(editButton1, json.getString("bt1"));
+            } else if (json.has("bt2")) {
+                processButtonStatus(editButton2, json.getString("bt2"));
 
-            if (json.has("bt2")) {
-                Log.d("ANDRUINO", json.getString("bt2"));
-            }
-
-            if (json.has("bt3")) {
-                Log.d("ANDRUINO", json.getString("bt3"));
-            }
-
-            if (json.has("bt4")) {
-                Log.d("ANDRUINO", json.getString("bt4"));
+            } else if (json.has("bt3")) {
+                processButtonStatus(editButton3, json.getString("bt3"));
             }
 
         } catch (Exception e) {
             Log.d("ANDRUINO", e.getMessage());
+        }
+    }
+
+    private void processButtonStatus(EditText editText, String status) {
+        switch (status) {
+            case "0":
+                editText.setText("Desligado");
+                break;
+            case "1":
+                editText.setText("Ligado");
+                break;
+            default:
+                editText.setText("Erro");
+                break;
         }
     }
 
