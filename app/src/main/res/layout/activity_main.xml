@@ -19,6 +19,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="15dp"
+            android:gravity="center"
+            android:textSize="32sp"
+            android:text="PUBLISH SUBSCRIBE" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="15dp"
             android:text="Acionamento" />
 
         <Button
