@@ -1,4 +1,4 @@
-package com.example.rafael.andruino;
+package com.example.rafael.andruino.activity;
 
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
+import com.example.rafael.andruino.R;
 import com.pubnub.api.Callback;
 import com.pubnub.api.Pubnub;
 import com.pubnub.api.PubnubError;
