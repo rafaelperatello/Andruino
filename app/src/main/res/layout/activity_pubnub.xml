@@ -4,99 +4,104 @@
     android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".activity.PubnubActivity">
 
-    <LinearLayout
+    <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="15dp"
-            android:gravity="center"
-            android:textSize="32sp"
-            android:text="PUBLISH SUBSCRIBE" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="15dp"
-            android:text="Acionamento" />
-
-        <Button
-            android:id="@+id/button_Led1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Led1" />
-
-        <Button
-            android:id="@+id/button_Led2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Led2" />
-
-        <SeekBar
-            android:id="@+id/seekBarLed3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:paddingBottom="15dp"
-            android:text="Status" />
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/input_layout_1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <EditText
-                android:id="@+id/edit_button1"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusable="false"
-                android:hint="Botão 1"
-                android:text="Desligado" />
-        </android.support.design.widget.TextInputLayout>
+                android:gravity="center"
+                android:paddingBottom="15dp"
+                android:text="PUBLISH SUBSCRIBE"
+                android:textSize="32sp" />
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/input_layout_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <EditText
-                android:id="@+id/edit_button2"
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusable="false"
-                android:hint="Botão 2"
-                android:text="Desligado" />
-        </android.support.design.widget.TextInputLayout>
+                android:paddingBottom="15dp"
+                android:text="Acionamento" />
 
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/input_layout_3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <EditText
-                android:id="@+id/edit_button3"
+            <Button
+                android:id="@+id/button_Led1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusable="false"
-                android:hint="Botão 3"
-                android:text="Desligado" />
-        </android.support.design.widget.TextInputLayout>
-    </LinearLayout>
+                android:text="Led1" />
+
+            <Button
+                android:id="@+id/button_Led2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Led2" />
+
+            <SeekBar
+                android:id="@+id/seekBarLed3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:paddingBottom="15dp"
+                android:text="Status" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/edit_button1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:hint="Botão 1"
+                    android:text="Desligado" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/edit_button2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:hint="Botão 2"
+                    android:text="Desligado" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <EditText
+                    android:id="@+id/edit_button3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:hint="Botão 3"
+                    android:text="Desligado" />
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

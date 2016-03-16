@@ -1,4 +1,4 @@
-package br.edu.ifspsaocarlos.sdm.clientetcp;
+package com.example.rafael.andruino.util;
 
 /**
  * Created by rapha on 3/15/2016.
@@ -11,8 +11,9 @@ import java.net.Socket;
 public class TCPClient {
 
     private String serverMessage;
-    public static final String SERVERIP = "192.168.1.177"; //your computer IP address
-    public static final int SERVERPORT = 1111;
+    private String serverIp = "192.168.1.177";
+    private int serverPort = 23;
+
     private OnMessageReceived mMessageListener = null;
     private boolean mRun = false;
 
@@ -23,6 +24,14 @@ public class TCPClient {
      *  Constructor of the class. OnMessagedReceived listens for the messages received from server
      */
     public TCPClient(OnMessageReceived listener) {
+        mMessageListener = listener;
+    }
+
+    public void setIp(String ip){
+        serverIp = ip;
+    }
+
+    public void registerListener(OnMessageReceived listener){
         mMessageListener = listener;
     }
 
@@ -47,12 +56,12 @@ public class TCPClient {
 
         try {
             //here you must put your computer's IP address.
-            InetAddress serverAddr = InetAddress.getByName(SERVERIP);
+            InetAddress serverAddr = InetAddress.getByName(serverIp);
 
             Log.e("TCP Client", "C: Connecting...");
 
             //create a socket to make the connection with the server
-            Socket socket = new Socket(serverAddr, SERVERPORT);
+            Socket socket = new Socket(serverAddr, serverPort);
 
             try {
 
