@@ -3,113 +3,168 @@ package com.example.rafael.andruino.util;
 /**
  * Created by rapha on 3/15/2016.
  */
+
+import android.os.AsyncTask;
 import android.util.Log;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 
 public class TCPClient {
+    private OnMessageReceived mMessageListener = null;
+    private OnConnectionListener mConnectionListener = null;
 
+    private ConnectTask connectTask = null;
+
+    //Server config
+    private String serverIp;
     private String serverMessage;
-    private String serverIp = "192.168.1.177";
     private int serverPort = 23;
 
-    private OnMessageReceived mMessageListener = null;
-    private boolean mRun = false;
+    //Buffers
+    PrintWriter outBuffer;
+    BufferedReader inBuffer;
 
-    PrintWriter out;
-    BufferedReader in;
-
-    /**
-     *  Constructor of the class. OnMessagedReceived listens for the messages received from server
-     */
-    public TCPClient(OnMessageReceived listener) {
-        mMessageListener = listener;
+    public TCPClient(OnMessageReceived messageListener, OnConnectionListener connectionListener) {
+        mMessageListener = messageListener;
+        mConnectionListener = connectionListener;
     }
 
-    public void setIp(String ip){
+    //Set ip to connect
+    public void setIp(String ip) {
         serverIp = ip;
     }
 
-    public void registerListener(OnMessageReceived listener){
-        mMessageListener = listener;
+    //Register listener to be called when message arrives
+    public void registerMessageListener(OnMessageReceived messageListener) {
+        mMessageListener = messageListener;
     }
 
-    /**
-     * Sends the message entered by client to the server
-     * @param message text entered by client
-     */
-    public void sendMessage(String message){
-        if (out != null && !out.checkError()) {
-            out.println(message);
-            out.flush();
+    public void registerConnectionListener(OnConnectionListener connectionListener) {
+        mConnectionListener = connectionListener;
+    }
+
+    //Send message
+    public void sendMessage(String message) {
+        if (outBuffer != null && !outBuffer.checkError()) {
+            outBuffer.println(message);
+            outBuffer.flush();
         }
     }
 
-    public void stopClient(){
-        mRun = false;
-    }
-
-    public void run() {
-
-        mRun = true;
-
-        try {
-            //here you must put your computer's IP address.
-            InetAddress serverAddr = InetAddress.getByName(serverIp);
-
-            Log.e("TCP Client", "C: Connecting...");
-
-            //create a socket to make the connection with the server
-            Socket socket = new Socket(serverAddr, serverPort);
-
-            try {
-
-                //send the message to the server
-                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-
-                Log.e("TCP Client", "C: Sent.");
-
-                Log.e("TCP Client", "C: Done.");
-
-                //receive the message which the server sends back
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                //in this while the client listens for the messages sent by the server
-                while (mRun) {
-                    serverMessage = in.readLine();
-
-                    if (serverMessage != null && mMessageListener != null) {
-                        //call the method messageReceived from MyActivity class
-                        mMessageListener.messageReceived(serverMessage);
-                    }
-                    serverMessage = null;
-
-                }
-
-                Log.e("RESPONSE FROM SERVER", "S: Received Message: '" + serverMessage + "'");
-
-            } catch (Exception e) {
-
-                Log.e("TCP", "S: Error", e);
-
-            } finally {
-                //the socket must be closed. It is not possible to reconnect to this socket
-                // after it is closed, which means a new socket instance has to be created.
-                socket.close();
-            }
-
-        } catch (Exception e) {
-
-            Log.e("TCP", "C: Error", e);
-
+    //Start client
+    public void startClient() {
+        if (connectTask != null) {
+            stopClient();
         }
 
+        connectTask = new ConnectTask();
+        connectTask.execute(serverIp);
     }
 
-    //Declare the interface. The method messageReceived(String message) will must be implemented in the MyActivity
+    //Stop client
+    public void stopClient() {
+        if (connectTask != null) {
+            connectTask.clearSocket();
+            connectTask.cancel(true);
+            connectTask = null;
+        }
+
+        if (mConnectionListener != null) {
+            mConnectionListener.onDisconnect();
+        }
+    }
+
+    //Declare the interface. The method messageReceived(String message) will must be implemented inBuffer the MyActivity
     //class at on asynckTask doInBackground
     public interface OnMessageReceived {
-        public void messageReceived(String message);
+        void messageReceived(String message);
+    }
+
+    public interface OnConnectionListener {
+        void onConnect();
+
+        void onError();
+
+        void onDisconnect();
+    }
+
+    public class ConnectTask extends AsyncTask<String, String, Void> {
+        private Socket socket;
+
+        public void clearSocket() {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        protected Void doInBackground(String... serverIp) {
+            Log.d("ANDRUINO", "doInBackground");
+
+            try {
+                //here you must put your computer's IP address.
+                InetAddress serverAddr = InetAddress.getByName(serverIp[0]);
+
+                //create a socket to make the connection with the server
+                socket = new Socket(serverAddr, serverPort);
+
+                if (mConnectionListener != null) {
+                    mConnectionListener.onConnect();
+                }
+
+                try {
+                    //send the message to the server
+                    outBuffer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+
+                    Log.d("ANDRUINO", "C: Done.");
+
+                    //receive the message which the server sends back
+                    inBuffer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                    //in this while the client listens for the messages sent by the server
+                    while (!isCancelled()) {
+                        serverMessage = inBuffer.readLine();
+
+                        if (serverMessage != null && mMessageListener != null) {
+                            //call the method messageReceived from MyActivity class
+                            Log.d("ANDRUINO", "S: Received Message: '" + serverMessage + "'");
+                            mMessageListener.messageReceived(serverMessage);
+                        }
+                        serverMessage = null;
+                    }
+                } catch (Exception e) {
+                    inBuffer.close();
+                    outBuffer.close();
+
+                    inBuffer = null;
+                    outBuffer = null;
+
+                    Log.d("ANDRUINO", "S: Error", e);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                if (mConnectionListener != null) {
+                    mConnectionListener.onError();
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            Log.d("ANDRUINO", "onProgressUpdate");
+            super.onProgressUpdate(values);
+
+            if (mMessageListener != null) {
+                mMessageListener.messageReceived(values[0]);
+            }
+        }
     }
 }

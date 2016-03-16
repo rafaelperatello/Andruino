@@ -1,6 +1,5 @@
 package com.example.rafael.andruino.activity;
 
-import android.os.AsyncTask;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,17 +8,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.example.rafael.andruino.R;
 import com.example.rafael.andruino.util.TCPClient;
-import com.pubnub.api.Pubnub;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SocketActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, TCPClient.OnMessageReceived {
+public class SocketActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, TCPClient.OnMessageReceived, TCPClient.OnConnectionListener {
     private TCPClient client;
+
+    private boolean isConnected;
 
     private boolean isButtonLed1Active = false;
     private boolean isButtonLed2Active = false;
@@ -27,8 +28,6 @@ public class SocketActivity extends AppCompatActivity implements View.OnClickLis
     private CoordinatorLayout coordinator;
 
     private Button buttonConnect;
-
-
     private Button buttonLed1;
     private Button buttonLed2;
     private SeekBar seekBarLed3;
@@ -36,15 +35,17 @@ public class SocketActivity extends AppCompatActivity implements View.OnClickLis
     private EditText editButton1;
     private EditText editButton2;
     private EditText editButton3;
-
     private EditText editIp;
+
+    private TextView textInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_socket);
 
-        client = new TCPClient(this);
+        client = new TCPClient(this, this);
+        isConnected = false;
 
         coordinator = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
 
@@ -66,17 +67,31 @@ public class SocketActivity extends AppCompatActivity implements View.OnClickLis
         buttonConnect = (Button) findViewById(R.id.button_connect);
         buttonConnect.setOnClickListener(this);
 
+        textInfo = (TextView) findViewById(R.id.text_info);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        disconnect();
     }
 
     private void connect() {
-        String ip = editIp.getText().toString();
-        client.setIp(ip);
-        new connectTask().execute("");
+        textInfo.setText("Conectando");
+
+        client.setIp(editIp.getText().toString());
+        client.startClient();
+    }
+
+    private void disconnect() {
+        textInfo.setText("Disconectando");
+
+        client.stopClient();
     }
 
     private void send(String key, int value) {
-        JSONObject json = new JSONObject();
         try {
+            JSONObject json = new JSONObject();
             json.put(key, value);
             client.sendMessage(json.toString());
         } catch (JSONException e) {
@@ -154,7 +169,6 @@ public class SocketActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.button_Led1) {
@@ -174,7 +188,10 @@ public class SocketActivity extends AppCompatActivity implements View.OnClickLis
                 send("led2", 255);
             }
         } else if (v.getId() == R.id.button_connect) {
-            connect();
+            if (isConnected)
+                disconnect();
+            else
+                connect();
         }
     }
 
@@ -195,32 +212,39 @@ public class SocketActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void messageReceived(String message) {
-
+        onReceive(message);
     }
 
-    public class connectTask extends AsyncTask<String, String, TCPClient> {
+    @Override
+    public void onConnect() {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                textInfo.setText("Conectado");
+                buttonConnect.setText("Desconectar");
+                isConnected = true;
+            }
+        });
+    }
 
-        @Override
-        protected TCPClient doInBackground(String... message) {
+    @Override
+    public void onError() {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                textInfo.setText("Erro");
+                buttonConnect.setText("Conectar");
+                isConnected = false;
+            }
+        });
+    }
 
-            //we create a TCPClient object and
-            client.registerListener(new TCPClient.OnMessageReceived() {
-                @Override
-                //here the messageReceived method is implemented
-                public void messageReceived(String message) {
-                    //this method calls the onProgressUpdate
-                    publishProgress(message);
-                }
-            });
-            client.run();
-
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            onReceive(values[0]);
-        }
+    @Override
+    public void onDisconnect() {
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                textInfo.setText("Disconectado");
+                buttonConnect.setText("Conectar");
+                isConnected = false;
+            }
+        });
     }
 }
