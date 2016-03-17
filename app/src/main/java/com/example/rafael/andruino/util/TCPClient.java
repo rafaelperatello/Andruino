@@ -95,7 +95,9 @@ public class TCPClient {
 
         public void clearSocket() {
             try {
-                socket.close();
+                if (socket != null) {
+                    socket.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -129,11 +131,11 @@ public class TCPClient {
                     while (!isCancelled()) {
                         serverMessage = inBuffer.readLine();
 
-                        if (serverMessage != null && mMessageListener != null) {
-                            //call the method messageReceived from MyActivity class
+                        if (serverMessage != null) {
                             Log.d("ANDRUINO", "S: Received Message: '" + serverMessage + "'");
-                            mMessageListener.messageReceived(serverMessage);
+                            publishProgress(serverMessage);
                         }
+
                         serverMessage = null;
                     }
                 } catch (Exception e) {
