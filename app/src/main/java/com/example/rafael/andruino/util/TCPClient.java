@@ -22,9 +22,6 @@ public class TCPClient {
     private String serverMessage;
     private int serverPort = 23;
 
-    //Buffers
-    PrintWriter outBuffer;
-    BufferedReader inBuffer;
 
     public TCPClient(OnMessageReceived messageListener, OnConnectionListener connectionListener) {
         mMessageListener = messageListener;
@@ -47,9 +44,8 @@ public class TCPClient {
 
     //Send message
     public void sendMessage(String message) {
-        if (outBuffer != null && !outBuffer.checkError()) {
-            outBuffer.println(message);
-            outBuffer.flush();
+        if (connectTask != null) {
+            connectTask.sendMessage(message);
         }
     }
 
@@ -67,7 +63,7 @@ public class TCPClient {
     public void stopClient() {
         if (connectTask != null) {
             connectTask.clearSocket();
-            connectTask.cancel(true);
+            connectTask.cancel(false);
             connectTask = null;
         }
 
@@ -92,6 +88,17 @@ public class TCPClient {
 
     public class ConnectTask extends AsyncTask<String, String, Void> {
         private Socket socket;
+
+        //Buffers
+        PrintWriter outBuffer;
+        BufferedReader inBuffer;
+
+        public void sendMessage(String message) {
+            if (outBuffer != null && !outBuffer.checkError()) {
+                outBuffer.println(message);
+                outBuffer.flush();
+            }
+        }
 
         public void clearSocket() {
             try {
@@ -166,6 +173,26 @@ public class TCPClient {
 
             if (mMessageListener != null) {
                 mMessageListener.messageReceived(values[0]);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            Log.d("ANDRUINO", "onPostExecute");
+            super.onPostExecute(aVoid);
+
+            try {
+                if (inBuffer != null) {
+                    inBuffer.close();
+                    inBuffer = null;
+                }
+
+                if (outBuffer != null) {
+                    outBuffer.close();
+                    outBuffer = null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
